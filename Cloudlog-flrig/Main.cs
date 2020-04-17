@@ -99,7 +99,7 @@ namespace Cloudlog_flrig
 
                 UpdateRadioInfoTextBoxes(radioInfo);
 
-                if (radioInfo != null)
+                if (radioInfo != null && radioInfo.RadioName?.Length > 0)
                 {
                     try
                     {

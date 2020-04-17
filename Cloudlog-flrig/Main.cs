@@ -93,7 +93,7 @@ namespace Cloudlog_flrig
                 }
                 catch (Exception e)
                 {
-                    UpdateStatus($"Error contacting FLRig: {e.Message}");
+                    UpdateStatus($"FLRig error: {e.Message}");
                     timerUpdateRadioInfo.Interval = 10 * 1000;
                 }
 
@@ -161,7 +161,7 @@ namespace Cloudlog_flrig
             statusStrip1.Refresh();
             this.Update();
 
-            notifyIcon.Text = $"Cloudlog-flrig: {v}";
+            notifyIcon.Text = $"Cloudlog-flrig: {v}".MaxLength(60);
         }
 
         private RadioInfo GetRadioInfoFromFlRig()

@@ -25,7 +25,7 @@ namespace Cloudlog_flrig.CloudlogAPI
 
         public void Dispose()
         {
-
+            _webClient.Dispose();
         }
 
         public CloudlogResult SendRadioInfo(string cloudlogURL, string cloudlogAPIKey, Models.RadioInfo radioInfo)

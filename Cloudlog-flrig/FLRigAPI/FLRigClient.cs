@@ -77,7 +77,7 @@ namespace Cloudlog_flrig.FLRigAPI
                     mode = "DIGI";
                     break;
                 case "AM":
-                    mode = "AMD";
+                    mode = "AM";
                     break;
                 case "FM":
                     mode = "FM";

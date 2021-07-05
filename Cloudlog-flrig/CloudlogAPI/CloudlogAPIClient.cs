@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -36,7 +37,7 @@ namespace Cloudlog_flrig.CloudlogAPI
                 radio = string.IsNullOrWhiteSpace(radioInfo.RadioName) ? "FLRig" : radioInfo.RadioName,
                 frequency = radioInfo.Frequency,
                 mode = radioInfo.Mode,
-                timestamp = DateTime.UtcNow.ToString("yyyy/MM/dd HH:mm")
+                timestamp = DateTime.UtcNow.ToString("yyyy/MM/dd HH:mm", CultureInfo.InvariantCulture)
             };
 
             var requestUrl = new Uri(new Uri($"{cloudlogURL.TrimEnd('/')}/"), "index.php/api/radio");

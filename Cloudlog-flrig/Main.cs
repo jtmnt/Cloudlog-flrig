@@ -32,6 +32,7 @@ namespace Cloudlog_flrig
             LoadCustomRadioSettings();
 
             UpdateRadioInfo();
+            UpdateCustomRadioInfo();
         }
 
         private void LoadCustomRadioSettings()

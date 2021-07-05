@@ -37,7 +37,7 @@ namespace Cloudlog_flrig.CloudlogAPI
                 radio = string.IsNullOrWhiteSpace(radioInfo.RadioName) ? "FLRig" : radioInfo.RadioName,
                 frequency = radioInfo.Frequency,
                 mode = radioInfo.Mode,
-                timestamp = DateTime.UtcNow.ToString("yyyy/MM/dd HH:mm", CultureInfo.InvariantCulture)
+                timestamp = DateTime.Now.ToString("yyyy/MM/dd HH:mm", CultureInfo.InvariantCulture)
             };
 
             var requestUrl = new Uri(new Uri($"{cloudlogURL.TrimEnd('/')}/"), "index.php/api/radio");

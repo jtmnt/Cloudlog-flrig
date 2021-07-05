@@ -11,5 +11,17 @@
     <Setting Name="FLRigURL" Type="System.String" Scope="User">
       <Value Profile="(Default)">http://127.0.0.1:12345</Value>
     </Setting>
+    <Setting Name="CustomRadioName" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="CustomFrequency" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">145500000</Value>
+    </Setting>
+    <Setting Name="CustomMode" Type="System.String" Scope="User">
+      <Value Profile="(Default)">FM</Value>
+    </Setting>
+    <Setting Name="CustomRadioEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

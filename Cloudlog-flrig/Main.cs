@@ -17,6 +17,9 @@ namespace Cloudlog_flrig
         private Models.RadioInfo lastSyncedRadioInfo = null;
         private DateTime dttmLastSyncedTimeUTC;
 
+        private Models.RadioInfo lastSyncedCustomRadioInfo = null;
+        private DateTime dttmLastSyncedTimeCustomUTC;
+
         public Main()
         {
             InitializeComponent();
@@ -26,7 +29,18 @@ namespace Cloudlog_flrig
         {
             base.OnLoad(e);
 
+            LoadCustomRadioSettings();
+
             UpdateRadioInfo();
+        }
+
+        private void LoadCustomRadioSettings()
+        {
+            textBoxCustomRadioName.Text = Properties.Settings.Default.CustomRadioName;
+            textBoxCustomFrequency.Text = Properties.Settings.Default.CustomFrequency.ToString();
+            textBoxCustomMode.Text = Properties.Settings.Default.CustomMode;
+
+            checkBoxCustomRadioEnabled.Checked = Properties.Settings.Default.CustomRadioEnabled;
         }
 
         private CloudlogAPI.CloudlogAPIClient m_CloudlogAPIClient = null;
@@ -189,6 +203,172 @@ namespace Cloudlog_flrig
             this.WindowState = FormWindowState.Normal;
             this.ShowInTaskbar = true;
             notifyIcon.Visible = false;
+        }
+
+        private void checkBoxCustomRadioEnabled_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxCustomRadioEnabled.Checked)
+            {
+                UpdateCustomRadioInfo();
+            }
+
+            Properties.Settings.Default.CustomRadioEnabled = checkBoxCustomRadioEnabled.Checked;
+
+            textBoxCustomRadioName.ReadOnly = checkBoxCustomRadioEnabled.Checked;
+        }
+
+        private void timerUpdateCustomRadioInfo_Tick(object sender, EventArgs e)
+        {
+            UpdateCustomRadioInfo();
+        }
+
+        private RadioInfo GetCustomRadioInfo()
+        {
+            int frequency = GetCustomFrequency();
+
+            RadioInfo radioInfo = new RadioInfo()
+            {
+                RadioName = textBoxCustomRadioName.Text.Trim(),
+                Frequency = frequency,
+                Mode = textBoxCustomMode.Text.Trim()
+            };
+
+            return radioInfo;
+        }
+
+        private void UpdateCustomRadioInfo()
+        {
+            timerUpdateCustomRadioInfo.Stop();
+
+            if (checkBoxCustomRadioEnabled.Checked == false)
+            {
+                return;
+            }
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(Properties.Settings.Default.CloudlogURL))
+                {
+                    UpdateStatus($"Error: missing Cloudlog URL!");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(Properties.Settings.Default.CloudlogAPIKey))
+                {
+                    UpdateStatus($"Error: missing Cloudlog API Key!");
+                    return;
+                }
+
+                //if (string.IsNullOrWhiteSpace(Properties.Settings.Default.FLRigURL))
+                //{
+                //    UpdateStatus($"Error: missing FLRig URL!");
+                //    return;
+                //}
+
+                Models.RadioInfo radioInfo = GetCustomRadioInfo();
+
+                if (radioInfo != null && radioInfo.RadioName?.Length > 0)
+                {
+                    try
+                    {
+                        if (lastSyncedCustomRadioInfo == null ||
+                            (lastSyncedCustomRadioInfo.Frequency != radioInfo.Frequency) ||
+                            (lastSyncedCustomRadioInfo.Mode != radioInfo.Mode) ||
+                            (dttmLastSyncedTimeCustomUTC.AddSeconds(30) < DateTime.UtcNow)
+                           )
+                        {
+                            var result = CloudlogAPIClient.SendRadioInfo(Properties.Settings.Default.CloudlogURL, Properties.Settings.Default.CloudlogAPIKey, radioInfo);
+
+                            if (result.status == "success")
+                            {
+                                lastSyncedCustomRadioInfo = radioInfo;
+                                dttmLastSyncedTimeCustomUTC = DateTime.UtcNow;
+
+                                UpdateStatus($"Last synced to cloudlog: {DateTime.Now.ToString("G")}");
+
+                                timerUpdateCustomRadioInfo.Interval = 1000;
+
+                                timerUpdateCustomRadioInfo.Tag = null;
+                            }
+                            else
+                            {
+                                UpdateStatus($"Cloudlog API Error: status: {result.status}, reason: {result.reason}");
+                                timerUpdateCustomRadioInfo.Tag = result;
+                                return;
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        UpdateStatus($"Error contacting cloudlog: Check Cloudlog URL!");
+                        timerUpdateCustomRadioInfo.Interval = 10 * 1000;
+                    }
+                }
+                else
+                {
+                    checkBoxCustomRadioEnabled.Checked = false;
+                }
+            }
+            finally
+            {
+                if (timerUpdateCustomRadioInfo.Tag == null)
+                {
+                    timerUpdateCustomRadioInfo.Start();
+                }
+            }
+        }
+
+        private void buttonCustomBand2m_Click(object sender, EventArgs e)
+        {
+            textBoxCustomFrequency.Text = "145500000";
+            UpdateCustomRadioInfo();
+        }
+
+        private void buttonCustomBand70cm_Click(object sender, EventArgs e)
+        {
+            textBoxCustomFrequency.Text = "433500000";
+            UpdateCustomRadioInfo();
+        }
+
+        private void buttonCustomFrequencyAdd25K_Click(object sender, EventArgs e)
+        {
+            int frequency = GetCustomFrequency();
+            textBoxCustomFrequency.Text = (frequency + 25000).ToString();
+            UpdateCustomRadioInfo();
+        }
+
+        private int GetCustomFrequency()
+        {
+            string sFrequency = textBoxCustomFrequency.Text.Trim().Replace(" ", "");
+            
+            int.TryParse(sFrequency, out int frequency);
+
+            return frequency;
+        }
+
+        private void buttonCustomFrequencySubtract25K_Click(object sender, EventArgs e)
+        {
+            int frequency = GetCustomFrequency();
+            textBoxCustomFrequency.Text = (frequency - 25000).ToString();
+            UpdateCustomRadioInfo();
+        }
+
+        private void textBoxCustomRadioName_TextChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.CustomRadioName = textBoxCustomRadioName.Text;
+            Properties.Settings.Default.Save();
+        }
+
+        private void textBoxCustomFrequency_TextChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.CustomFrequency = GetCustomFrequency();
+            Properties.Settings.Default.Save();
+        }
+
+        private void textBoxCustomMode_TextChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.CustomMode = textBoxCustomMode.Text;
+            Properties.Settings.Default.Save();
         }
     }
 }
